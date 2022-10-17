@@ -9,9 +9,7 @@
  * @license MIT
  */
 
-  // Preciso ajeitar o getNote e o getCommentaire que n esta funcionando pois temos que chamar o methode ajout da class...
-  // Falta terminar o methodo put commentaire que precisa do id usager para funcionar(chmar na classe usager)
-  // delete e post funcionam de boa e put biere tb ja esta funcionando
+  
 class BiereControlleur 
 {
 	private $retour = array('data'=>array());
@@ -42,14 +40,14 @@ class BiereControlleur
 						break;
 				}
 			} else {
-				$this->retour["data"] = $this->getBiere($id_biere);
+				$this->retour['data'] = $this->getBiere($id_biere);
 			}
 			
 
 		} 
 		else 
 		{
-			$this->retour["data"] = $this->getListeBiere();
+			$this->retour['data'] = $this->getListeBiere();
 			
 		}
 
@@ -74,7 +72,7 @@ class BiereControlleur
 		{
 			$id_biere = (int)$requete->url_elements[0];
 			$params = $requete->parametres;
-			$this->retour["data"] = $this->modifBiere($id_biere, $params);
+			$this->retour['data'] = $this->modifBiere($id_biere, $params);
 		}
 		
 		return $this->retour;
@@ -117,7 +115,7 @@ class BiereControlleur
 			} 
 			else 
 			{
-				$this->retour["data"] = $this->ajouterUneBiere($requete->parametres);
+				$this->retour['data'] = $this->ajouterUneBiere($requete->parametres);
 				
 			}
 				
@@ -141,13 +139,14 @@ class BiereControlleur
 		}
 		else 
 		{
-			$id_biere = (int)$requete->url_elements[0];
-			$oBiere = new Biere();
-			$this->retour['res'] = $oBiere->effacerBiere($id_biere);
+			if (isset($requete->url_elements[0]) && is_numeric($requete->url_elements[0]))
+			{
+				$id_biere = (int)$requete->url_elements[0];
+				$this->retour['res'] = $this->effacerBiere($id_biere);
+			}
 			
 		}
 		
-
 		return $this->retour;
 		
 	}
@@ -192,8 +191,8 @@ class BiereControlleur
 	private function getCommentaire($id_biere)
 	{
 		$res = Array();
-		$oComentaire = new Commentaire();
-		$res = $oComentaire->getListe($id_biere);
+		$oCommentaire = new Commentaire();
+		$res = $oCommentaire->getListe($id_biere);
 		
 		return $res; 
 	}
@@ -225,8 +224,9 @@ class BiereControlleur
 	private function modifBiere($id_biere, $data)
 	{
 		$res = Array();
-		$oBiero = new Biere();
-		$res['modif'] = $oBiero->modifierBiere($id_biere, $data);
+		$oBiere = new Biere();
+		$res['modif'] = $oBiere->modifierBiere($id_biere, $data);
+
 		return $res; 
 	}
 	
@@ -239,6 +239,8 @@ class BiereControlleur
 	private function effacerBiere($id_biere)
 	{
 		$res = Array();
+		$oBiere = new Biere();
+		$res = $oBiere->effacerBiere($id_biere);
 		
 		return $res; 
 	}
@@ -267,10 +269,11 @@ class BiereControlleur
 	 */	
 	private function ajouterUneNote($id_biere, $data)
 	{
-		$res = Array();
-		$id_biere = (int)$requete->url_elements[0];
-		$oBiere = new Note();
-		$res = $oBiere->ajouterNote($data);
+		$res = array();
+		$oUsager = new Usager();
+		$id_usager = $oUsager->ajouterUsager($data['courriel']);
+		$oNote = new Note();
+		$res = $oNote->ajouterNote($id_usager, $id_biere, $data['note']);
 
 		return $res; 
 	}
@@ -286,13 +289,11 @@ class BiereControlleur
 	private function ajouterUnCommentaire($id_biere, $data)
 	{
 		// tem que fazer um for each pra bouclar dentro de requete-"params pegando cle valeur e procurar courriel pra dai ter o resultado de courriel.
-		$courriel = $requete->parametres[0];
 		$res = Array();
-		$id_biere = (int)$requete->url_elements[0];
 		$oUsager = new Usager();
-		$id_usager = $oUsager->ajouterUsager($courriel);
-		$oBiere = new Commentaire();
-		$res = $oBiere->ajouterCommentaire($id_usager, $id_biere, $data);
+		$id_usager = $oUsager->ajouterUsager($data['courriel']);
+		$oCommentaire = new Commentaire();
+		$res = $oCommentaire->ajouterCommentaire($id_usager, $id_biere, $data['commentaire']);
 
 		return $res; 
 	}
